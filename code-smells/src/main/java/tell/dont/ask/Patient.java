@@ -1,37 +1,38 @@
 package tell.dont.ask;
 
-public class Patient {
+import org.immutables.value.Value;
 
-    private String email;
-    private Phone phone;
+import java.util.Optional;
 
-    public Patient() {
-        phone = new Phone(null);
+@Value.Immutable
+public interface Patient {
+
+    @Value.Parameter
+    Optional<Email> email();
+
+    @Value.Parameter
+    Optional<Phone> phone();
+
+    default boolean hasEmailAddress() {
+        return email().isPresent();
     }
 
-    public void setEmailAddress(String email) {
-        this.email = email;
-    }
+    default void receiveEmail(EmailService emailService) {
+        if(hasEmailAddress()) {
+            emailService.emailReminderTo(email().get().emailAddress());
+        }
+    };
 
-    public String getEmailAddress() {
-        return email;
-    }
+    default void receivePhoneCommunication(TextMessageService phoneService) {
+        if(!phone().isPresent()) {
+            return;
+        }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phone.setNumber(phoneNumber);
+        if(phone().get().isMobile()) {
+            phoneService.sendTextReminderTo(phone().get().phoneNumber());
+        } else if(phone().get().isLandLine()) {
+            phoneService.callWithReminder(phone().get().phoneNumber());
+        }
 
-    }
-
-    public String getPhoneNumber() {
-        return phone.getPhoneNumber();
-    }
-
-    public boolean hasEmailAddress() {
-        return this.email != null;
-    }
-
-    public Phone getPhone() {
-        return phone;
-    }
-
+    };
 }

@@ -3,6 +3,8 @@ import tell.dont.ask.Patient;
 import tell.dont.ask.Phone;
 import tell.dont.ask.TextMessageService;
 
+import java.util.Optional;
+
 
 public class PatientReminder {
 
@@ -16,16 +18,7 @@ public class PatientReminder {
     
     // Reminds a patient
     public void remind(Patient patient) {
-        if(patient.hasEmailAddress()) {
-            emailService.emailReminderTo(patient.getEmailAddress());
-        }
-        
-        Phone patientPhone = patient.getPhone();
-
-        if(patientPhone.isMobile()) {
-            phoneService.sendTextReminderTo(patient.getPhoneNumber());
-        } else if(patientPhone.isLandLine()) {
-            phoneService.callWithReminder(patient.getPhoneNumber());
-        }
+        patient.receiveEmail(emailService);
+        patient.receivePhoneCommunication(phoneService);
     }
 }
