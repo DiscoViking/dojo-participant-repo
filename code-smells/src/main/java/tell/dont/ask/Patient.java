@@ -3,7 +3,11 @@ package tell.dont.ask;
 public class Patient {
 
     private String email;
-    private String phoneNumber;
+    private Phone phone;
+
+    public Patient() {
+        phone = new Phone(null);
+    }
 
     public void setEmailAddress(String email) {
         this.email = email;
@@ -14,12 +18,20 @@ public class Patient {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-        
+        this.phone.setNumber(phoneNumber);
+
     }
 
     public String getPhoneNumber() {
-        return phoneNumber;
+        return phone.getPhoneNumber();
+    }
+
+    public boolean hasEmailAddress() {
+        return this.email != null;
+    }
+
+    public Phone getPhone() {
+        return phone;
     }
 
 }

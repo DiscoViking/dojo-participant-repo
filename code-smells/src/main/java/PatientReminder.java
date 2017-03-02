@@ -1,5 +1,6 @@
 import tell.dont.ask.EmailService;
 import tell.dont.ask.Patient;
+import tell.dont.ask.Phone;
 import tell.dont.ask.TextMessageService;
 
 
@@ -15,34 +16,16 @@ public class PatientReminder {
     
     // Reminds a patient
     public void remind(Patient patient) {
-        // Email the patient if they have an email address
-        String emailAddress = patient.getEmailAddress();
-        
-        // Email addresses are null when the patient doesn't have one
-        if(emailAddress != null) {
-            emailService.emailReminderTo(emailAddress);
+        if(patient.hasEmailAddress()) {
+            emailService.emailReminderTo(patient.getEmailAddress());
         }
         
-        // Text a patient if they have a mobile, otherwise ring them
-        String phoneNumber = patient.getPhoneNumber();
+        Phone patientPhone = patient.getPhone();
 
-        if(isValidPhoneNumber(phoneNumber)) {
-            if(isMobileNumber(phoneNumber)) {
-                phoneService.sendTextReminderTo(phoneNumber);
-            } else {
-                phoneService.callWithReminder(phoneNumber);
-            }
+        if(patientPhone.isMobile()) {
+            phoneService.sendTextReminderTo(patient.getPhoneNumber());
+        } else if(patientPhone.isLandLine()) {
+            phoneService.callWithReminder(patient.getPhoneNumber());
         }
     }
-
-    private boolean isMobileNumber(String phoneNumber) {
-        return phoneNumber.startsWith("07");
-    }
-
-    private boolean isValidPhoneNumber(String phoneNumber) {
-        // Phone numbers are null when teh patient doesn't have one
-        return phoneNumber != null 
-            && phoneNumber.length() == 11;
-    }
-
 }
