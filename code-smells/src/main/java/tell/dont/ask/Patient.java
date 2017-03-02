@@ -33,6 +33,5 @@ public interface Patient {
         } else if(phone().get().isLandLine()) {
             phoneService.callWithReminder(phone().get().phoneNumber());
         }
-
     };
 }

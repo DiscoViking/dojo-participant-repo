@@ -30,7 +30,11 @@ package can.touch;
 import cannot.touch.EmailService;
 import cannot.touch.TextService;
 
+import java.util.List;
+
 public class OfferService {
+    private static final String OFFER_EMAIL = "Congratulations! You will receive a 50% discount on your next order!";
+
     private final CustomerRepository repository;
     private final EmailService emailService;
     private final TextService textService;
@@ -42,6 +46,13 @@ public class OfferService {
     }
 
     public void sendOffers() {
-
+        List<TotalOrderValue> orderValues = repository.getTotalOrderValues();
+        for(TotalOrderValue totalOrderValue: orderValues) {
+            if(totalOrderValue.getOrderTotal() > 9000) {
+                Customer customer = repository.getCustomer(totalOrderValue.getCustomerId());
+                String emailAddress = customer.getContact();
+                this.emailService.sendEmail(emailAddress, OFFER_EMAIL);
+            }
+         }
     }
 }

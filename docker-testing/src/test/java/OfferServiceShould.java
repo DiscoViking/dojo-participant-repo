@@ -52,6 +52,8 @@ public class OfferServiceShould {
 
     private final OfferService offers = new OfferService(repository, emailService, textService);
 
+
+
     @Test public void
     email_50_percent_offers_to_clients_with_an_email_address_and_over_9000_dollars_worth_of_orders() {
         when(repository.getTotalOrderValues()).thenReturn(ImmutableList.of(totalOrderValue));
