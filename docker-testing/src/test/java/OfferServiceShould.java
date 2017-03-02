@@ -102,4 +102,5 @@ public class OfferServiceShould {
             reset(offerSender);
         }
     }
+
 }

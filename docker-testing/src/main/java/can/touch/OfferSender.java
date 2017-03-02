@@ -17,6 +17,19 @@ public class OfferSender {
     }
 
     public void sendOffer(Customer customer, String message) {
-        this.emailService.sendEmail(customer.getContact(), message);
+        if(customer.getContact() == null) {
+            return;
+        }
+
+        if(isEmailAddress(customer.getContact())) {
+            this.emailService.sendEmail(customer.getContact(), message);
+            return;
+        }
+
+        this.textService.sendMessage(customer.getContact(), message);
+    }
+
+    private static boolean isEmailAddress(String contact) {
+        return contact.contains("@");
     }
 }
