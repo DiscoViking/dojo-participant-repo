@@ -27,31 +27,28 @@
  */
 package can.touch;
 
-import cannot.touch.EmailService;
-import cannot.touch.TextService;
-
 import java.util.List;
 
 public class OfferService {
-    private static final String OFFER_EMAIL = "Congratulations! You will receive a 50% discount on your next order!";
+    private static final String OFFER_50_PCT = "Congratulations! You will receive a 50% discount on your next order!";
+    private static final String OFFER_40_PCT = "Congratulations! You will receive a 40% discount on your next order!";
 
     private final CustomerRepository repository;
-    private final EmailService emailService;
-    private final TextService textService;
+    private final OfferSender offerSender;
 
-    public OfferService(CustomerRepository repository, EmailService emailService, TextService textService) {
+    public OfferService(CustomerRepository repository, OfferSender offerSender) {
         this.repository = repository;
-        this.emailService = emailService;
-        this.textService = textService;
+        this.offerSender = offerSender;
     }
 
     public void sendOffers() {
         List<TotalOrderValue> orderValues = repository.getTotalOrderValues();
         for(TotalOrderValue totalOrderValue: orderValues) {
+            Customer customer = repository.getCustomer(totalOrderValue.getCustomerId());
             if(totalOrderValue.getOrderTotal() > 9000) {
-                Customer customer = repository.getCustomer(totalOrderValue.getCustomerId());
-                String emailAddress = customer.getContact();
-                this.emailService.sendEmail(emailAddress, OFFER_EMAIL);
+                this.offerSender.sendOffer(customer, OFFER_50_PCT);
+            } else if(totalOrderValue.getOrderTotal() >= 1000) {
+                this.offerSender.sendOffer(customer, OFFER_40_PCT);
             }
          }
     }

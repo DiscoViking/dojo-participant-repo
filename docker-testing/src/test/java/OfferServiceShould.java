@@ -26,18 +26,13 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import can.touch.Customer;
-import can.touch.CustomerRepository;
-import cannot.touch.EmailService;
-import can.touch.OfferService;
-import cannot.touch.TextService;
-import can.touch.TotalOrderValue;
+import can.touch.*;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 public class OfferServiceShould {
     private static final int ID = 123;
@@ -47,20 +42,64 @@ public class OfferServiceShould {
     private final TotalOrderValue totalOrderValue = new TotalOrderValue(ID, VALUE);
 
     private final CustomerRepository repository = mock(CustomerRepository.class);
-    private final EmailService emailService = mock(EmailService.class);
-    private final TextService textService = mock(TextService.class);
-
-    private final OfferService offers = new OfferService(repository, emailService, textService);
-
-
+    private final OfferSender offerSender = mock(OfferSender.class);
+    private final OfferService offers = new OfferService(repository, offerSender);
 
     @Test public void
-    email_50_percent_offers_to_clients_with_an_email_address_and_over_9000_dollars_worth_of_orders() {
+    if_9000_or_more_send_50_pct_offer() {
         when(repository.getTotalOrderValues()).thenReturn(ImmutableList.of(totalOrderValue));
         when(repository.getCustomer(ID)).thenReturn(AARON);
 
         offers.sendOffers();
 
-        verify(emailService).sendEmail(AARON.getContact(), "Congratulations! You will receive a 50% discount on your next order!");
+        verify(offerSender).sendOffer(AARON, "Congratulations! You will receive a 50% discount on your next order!");
+        verifyNoMoreInteractions(offerSender);
+    }
+
+    @Test public void
+    if_1000_to_8999_send_40_pct_offer() {
+        List<Integer> fortyPctValues = ImmutableList.of(
+            1000,
+            2000,
+            3000,
+            5555,
+            7324,
+            8500,
+            8999
+        );
+
+        for(int value: fortyPctValues) {
+            TotalOrderValue orderValue = new TotalOrderValue(ID, value);
+            when(repository.getTotalOrderValues()).thenReturn(ImmutableList.of(orderValue));
+            when(repository.getCustomer(ID)).thenReturn(AARON);
+
+            offers.sendOffers();
+
+            verify(offerSender).sendOffer(AARON, "Congratulations! You will receive a 40% discount on your next order!");
+            verifyNoMoreInteractions(offerSender);
+            reset(offerSender);
+        }
+    }
+
+    @Test public void
+    if_less_than_1000_no_offer_sent() {
+        List<Integer> fortyPctValues = ImmutableList.of(
+                0,
+                -100,
+                999,
+                111,
+                1
+        );
+
+        for(int value: fortyPctValues) {
+            TotalOrderValue orderValue = new TotalOrderValue(ID, value);
+            when(repository.getTotalOrderValues()).thenReturn(ImmutableList.of(orderValue));
+            when(repository.getCustomer(ID)).thenReturn(AARON);
+
+            offers.sendOffers();
+
+            verifyZeroInteractions(offerSender);
+            reset(offerSender);
+        }
     }
 }
