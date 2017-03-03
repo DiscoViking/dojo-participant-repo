@@ -15,7 +15,7 @@ export function respondTo(query: string): string {
         let str = m[1];
         let arr = str.split(", ");
         console.log(arr);
-        return _.max(arr.map(parseInt)).toString();
+        return _.max(_.map(arr, parseInt)).toString();
     }
     return `Unknown query '${query}'`;
 }
