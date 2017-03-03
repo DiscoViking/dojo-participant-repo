@@ -10,6 +10,7 @@ app.get("/", (request: express.Request, response: express.Response) => {
     console.log(query);
 
     const answer = respondTo(query);
+    console.log(answer);
     response.end(answer);
 });
 
