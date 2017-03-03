@@ -55,7 +55,7 @@ public interface CustomerRepository {
     @SqlUpdate("insert into customers (id, name, contact) values (:id, :name, :contact)")
     void insertCustomer(@Bind("id") int id, @Bind("name") String name, @Bind("contact") String contact);
 
-    @SqlUpdate("insert into orders (order_value, customer_id) values (:order_value, :customer_id")
+    @SqlUpdate("insert into orders (order_value, customer_id) values (:order_value, :customer_id)")
     void insertOrder(@Bind("order_value") int orderValue, @Bind("customer_id") int customerId);
 
     /*
@@ -76,6 +76,8 @@ public interface CustomerRepository {
     | customer                      |
     ---------------------------------
     */
+    @SqlQuery("select customer_id, sum(order_value) as total_order_value from orders group by customer_id")
+    @Mapper(TotalOrderValuesMapper.class)
     List<TotalOrderValue> getTotalOrderValues();
 
     /**

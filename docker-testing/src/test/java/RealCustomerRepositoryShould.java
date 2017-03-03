@@ -28,11 +28,15 @@
 
 import can.touch.Customer;
 import can.touch.CustomerRepository;
+import can.touch.TotalOrderValue;
+import com.google.common.collect.ImmutableList;
 import com.palantir.docker.compose.DockerComposeRule;
 import com.palantir.docker.compose.logging.LogDirectory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,7 +70,31 @@ public class RealCustomerRepositoryShould {
         repo.close();
     }
 
+    @Test public void
+    load_order_after_storing() {
+        int orderValue = 1934;
+        repo.insertOrder(orderValue, AARON.getId());
+
+        List<TotalOrderValue> orderValues = repo.getTotalOrderValues();
+
+        assertThat(orderValues).containsExactlyInAnyOrder(new TotalOrderValue(AARON.getId(), orderValue));
+    }
+
+    @Test public void
+    load_many_orders_for_customer_and_retrieve_sum() {
+        List<Integer> orders = ImmutableList.of(50, -100, 12, 1000, 2);
+        orders.forEach(
+                v -> repo.insertOrder(v, AARON.getId())
+        );
+
+        List<TotalOrderValue> orderValues = repo.getTotalOrderValues();
+
+        assertThat(orderValues).containsExactlyInAnyOrder(new TotalOrderValue(AARON.getId(), 964));
+    }
+
     private int postgresPort() {
         return docker.containers().container("db").port(5432).getExternalPort();
     }
+
+
 }
