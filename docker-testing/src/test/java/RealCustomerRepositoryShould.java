@@ -32,6 +32,7 @@ import can.touch.TotalOrderValue;
 import com.google.common.collect.ImmutableList;
 import com.palantir.docker.compose.DockerComposeRule;
 import com.palantir.docker.compose.logging.LogDirectory;
+import javafx.util.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class RealCustomerRepositoryShould {
     }
 
     @Test public void
-    load_order_after_storing() {
+    load_one_order_for_one_customer_after_storing() {
         int orderValue = 1934;
         repo.insertOrder(orderValue, AARON.getId());
 
@@ -81,7 +82,7 @@ public class RealCustomerRepositoryShould {
     }
 
     @Test public void
-    load_many_orders_for_customer_and_retrieve_sum() {
+    load_many_orders_for_one_customer_and_retrieve_sum() {
         List<Integer> orders = ImmutableList.of(50, -100, 12, 1000, 2);
         orders.forEach(
                 v -> repo.insertOrder(v, AARON.getId())
@@ -90,6 +91,48 @@ public class RealCustomerRepositoryShould {
         List<TotalOrderValue> orderValues = repo.getTotalOrderValues();
 
         assertThat(orderValues).containsExactlyInAnyOrder(new TotalOrderValue(AARON.getId(), 964));
+    }
+
+    @Test public void
+    load_many_customers_and_retrieve_each() {
+        List<Integer> ids = ImmutableList.of(1, 2, 3, 4);
+        List<Integer> values = ImmutableList.copyOf(ids);
+        for(int i = 0; i < ids.size(); i++) {
+            repo.insertOrder(values.get(i), ids.get(i));
+        }
+
+        List<TotalOrderValue> orderValues = repo.getTotalOrderValues();
+
+        assertThat(orderValues).containsExactlyInAnyOrder(
+                new TotalOrderValue(1, 1),
+                new TotalOrderValue(2, 2),
+                new TotalOrderValue(3, 3),
+                new TotalOrderValue(4, 4)
+        );
+    }
+
+    @Test public void
+    load_many_orders_for_customer_and_retrieve_sums() {
+        List<Pair<Integer, Integer>> orders = ImmutableList.of(
+                new Pair<>(1, 5),
+                new Pair<>(1, 500),
+                new Pair<>(2, -100),
+                new Pair<>(2, 10),
+                new Pair<>(2, 90),
+                new Pair<>(3, 10000000)
+        );
+
+        orders.forEach(
+                o -> repo.insertOrder(o.getValue(), o.getKey())
+        );
+
+        List<TotalOrderValue> orderValues = repo.getTotalOrderValues();
+
+        assertThat(orderValues).containsExactlyInAnyOrder(
+                new TotalOrderValue(1, 505),
+                new TotalOrderValue(2, 0),
+                new TotalOrderValue(3, 10000000)
+        );
     }
 
     private int postgresPort() {
